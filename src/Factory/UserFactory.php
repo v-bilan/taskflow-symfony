@@ -3,6 +3,7 @@
 namespace App\Factory;
 
 use App\Entity\User;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
@@ -15,7 +16,7 @@ final class UserFactory extends PersistentProxyObjectFactory
      *
      * @todo inject services if required
      */
-    public function __construct()
+    public function __construct(private PasswordHasherFactoryInterface $passwordHasherFactory)
     {
     }
 
@@ -35,7 +36,7 @@ final class UserFactory extends PersistentProxyObjectFactory
     {
         return [
             'email' => self::faker()->email(),
-            'password' => self::faker()->text(),
+            'plainPassword' => self::faker()->password(),
             'roles' => [],
             'name' => self::faker()->name()
         ];
@@ -48,7 +49,15 @@ final class UserFactory extends PersistentProxyObjectFactory
     protected function initialize(): static
     {
         return $this
-            // ->afterInstantiate(function(User $user): void {})
+            ->afterInstantiate(function(User $user): void {
+                $plainPassword = $user->getPlainPassword();
+                if (!$plainPassword) {
+                   return;
+                }
+                $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
+                $user->setPassword($passwordHasher->hash($plainPassword));
+                $user->setPlainPassword(null);
+            })
         ;
     }
 }

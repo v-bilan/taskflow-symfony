@@ -10,6 +10,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 class Task
 {
+
+    public const STATUS_TODO = 'todo';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_DONE = 'done';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
