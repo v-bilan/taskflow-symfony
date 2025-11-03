@@ -23,22 +23,22 @@ class Task
     private int $id;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['task:list', 'task:show'])]
+    #[Groups(['task:list', 'task:show', 'task:save'])]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 255, maxMessage: 'Tile should be 255 chars or less' )]
     private string $title;
 
-    #[Groups(['task:show'])]
+    #[Groups(['task:show', 'task:save'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: [self::STATUS_TODO, self::STATUS_DONE, self::STATUS_IN_PROGRESS])]
-    #[Groups(['task:list', 'task:show'])]
+    #[Groups(['task:list', 'task:show', 'task:save'])]
     #[ORM\Column(length: 20)]
     private ?string $status = null;
     #[Assert\Type(\DateTimeInterface::class)]
-    #[Groups(['task:list', 'task:show'])]
+    #[Groups(['task:list', 'task:show', 'task:save'])]
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dueDate = null;
 

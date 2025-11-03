@@ -132,7 +132,9 @@ final class TaskController extends AbstractController
          * @var Task $task
          */
 
-        $task = $serializer->deserialize($request->getContent(), Task::class, 'json');
+        $task = $serializer->deserialize($request->getContent(), Task::class, 'json', context: [
+            'groups' => ['task:save']
+        ]);
 
         $task->setOwner($this->getUser());
         $errors = $validator->validate($task);
