@@ -6,6 +6,7 @@ use App\Repository\TaskRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 class Task
@@ -18,26 +19,33 @@ class Task
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    #[Groups(['task:list', 'task:show'])]
+    private int $id;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['task:list'])]
-    private ?string $title = null;
+    #[Groups(['task:list', 'task:show'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 255, maxMessage: 'Tile should be 255 chars or less' )]
+    private string $title;
 
+    #[Groups(['task:show'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[Groups(['task:list'])]
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: [self::STATUS_TODO, self::STATUS_DONE, self::STATUS_IN_PROGRESS])]
+    #[Groups(['task:list', 'task:show'])]
     #[ORM\Column(length: 20)]
     private ?string $status = null;
-
-    #[Groups(['task:list'])]
+    #[Assert\Type(\DateTimeInterface::class)]
+    #[Groups(['task:list', 'task:show'])]
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dueDate = null;
 
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?user $owner = null;
+    #[Groups(['task:show'])]
+    private User $owner;
 
     public function getId(): ?int
     {
