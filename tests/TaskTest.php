@@ -75,6 +75,10 @@ class TaskTest extends WebTestCase{
 
         $client->request('GET', '/api/tasks/'. $task2->getId());
         $this->assertResponseStatusCodeSame(200);
+        $response = $client->getResponse();
+        $content = json_decode($response->getContent(), true);
+
+        $this->assertArrayHasKey('data', $content);
 
         $client->request('GET', '/api/tasks/'. $task1->getId());
         $this->assertResponseStatusCodeSame(200);

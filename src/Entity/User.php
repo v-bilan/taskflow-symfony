@@ -19,11 +19,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['task:show'])]
+    #[Groups(['task:read:detail'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['task:show'])]
+    #[Groups(['task:read:detail'])]
     private ?string $email = null;
 
     /**
@@ -41,7 +41,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['task:show'])]
+    #[Groups(['task:read:detail'])]
     private ?string $name = null;
 
     /**

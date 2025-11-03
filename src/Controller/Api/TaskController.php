@@ -39,7 +39,7 @@ final class TaskController extends AbstractController
                 'total' => count($tasks)
             ],
             context: [
-                'groups' => ['task:list']
+                'groups' => ['task:read:list']
             ]
         );
     }
@@ -75,7 +75,7 @@ final class TaskController extends AbstractController
                 'data' => $task
             ],
             context: [
-                'groups' => ['task:show']
+                'groups' => ['task:read:detail']
             ]
         );
     }
@@ -133,7 +133,7 @@ final class TaskController extends AbstractController
          */
 
         $task = $serializer->deserialize($request->getContent(), Task::class, 'json', context: [
-            'groups' => ['task:save']
+            'groups' => ['task:write']
         ]);
 
         $task->setOwner($this->getUser());
