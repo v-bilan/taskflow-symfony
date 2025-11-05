@@ -2,6 +2,7 @@
 
 namespace App\Tests;
 
+use App\Factory\ApiTokenFactory;
 use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,7 +16,63 @@ class TaskTest extends WebTestCase{
 
     use ResetDatabase;
 
-    public function testAccess(): void
+    public function testTokenAccess(): void
+    {
+        list($user1, $user2, $task1, $task2) = $this->getData();
+        $token1_1 = ApiTokenFactory::createOne(
+            [
+                'owner' => $user1,
+                'expiredAt' => null
+            ]
+        );
+        $token1_2 = ApiTokenFactory::createOne(
+            [
+                'owner' => $user1,
+                'expiredAt' => new \DateTime('tomorrow')
+            ]
+        );
+
+        $token2 = ApiTokenFactory::createOne(
+            [
+                'owner' => $user2,
+                'expiredAt' => new \DateTime('yesterday')
+            ]
+        );
+        $client = static::createClient();
+
+        $client->request(
+            'GET',
+            '/api/tasks',
+            server: [
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token1_1->getToken(),
+                'HTTP_ACCEPT'        => 'application/json',
+            ]
+        );
+        $this->assertResponseStatusCodeSame(200);
+
+        $client->request(
+            'GET',
+            '/api/tasks',
+            server: [
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token1_2->getToken(),
+                'HTTP_ACCEPT'        => 'application/json',
+            ]
+        );
+        $this->assertResponseStatusCodeSame(200);
+
+        $client->request(
+            'GET',
+            '/api/tasks',
+            server: [
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token2->getToken(),
+                'HTTP_ACCEPT'        => 'application/json',
+            ]
+        );
+        $this->assertResponseStatusCodeSame(401);
+
+    }
+
+    private function getData(): array
     {
         $user1 = UserFactory::createOne(
             attributes:[
@@ -42,8 +99,12 @@ class TaskTest extends WebTestCase{
             ['owner' => $user2]
         );
 
+        return [$user1, $user2, $task1, $task2];
+    }
 
-
+    public function testAccess(): void
+    {
+        list($user1, $user2, $task1, $task2) = $this->getData();
 
         $client = static::createClient();
 
@@ -173,8 +234,8 @@ class TaskTest extends WebTestCase{
 
         $response = $client->getResponse();
         $content = json_decode($response->getContent());
-
-
     }
+
+
 
 }
