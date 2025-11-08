@@ -141,8 +141,8 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             method: 'POST',
             uri: '/api/tasks',
             server: [
-                'CONTENT_TYPE' => 'application/ld+json',
-                'HTTP_ACCEPT' => 'application/ld+json',
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ],
             content: json_encode([
@@ -152,36 +152,31 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         );
 
         $this->assertResponseStatusCodeSame(201);
-        $id = $task1->getId();
-/*
-        $response = $client->getResponse();
 
-        dd($response);
-        $content = json_decode($response->getContent());
-dd($content);
-        $id = $content?->data?->id;
+        $content = json_decode($client->getResponse()->getContent());
+
+        $id = $content?->id;
 
         $this->assertIsInt($id);
 
         $task = TaskFactory::repository()->find($id);
 
         $this->assertNotNull($task);
-*/
+
         $client->request(
             'DELETE',
-            '/api/tasks/' . $task2->getId()
+            '/api/tasks/' . $task->getId()
         );
         $this->assertResponseStatusCodeSame(401);
 
         $client->request(
             'DELETE',
-            '/api/tasks/' . $task1->getId(),
+            '/api/tasks/' . $task->getId(),
             server: [
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ],
         );
-        $response = $client->getResponse();
 
         $this->assertResponseStatusCodeSame(204);
 

@@ -13,14 +13,14 @@ class TaskSetOwnerProcessor implements ProcessorInterface
 {
     public function __construct( 
         private ProcessorInterface $innerProcessor,       
-        private Security $security
+        private Security $security        
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []) 
     {
         if ($data instanceof Task && $data->getOwner() === null && $this->security->getUser()) {
-            $data->setOwner($this->security->getUser());
+            $data->setOwner($this->security->getUser());          
         }
-        $this->innerProcessor->process($data, $operation, $uriVariables, $context);
+        return $this->innerProcessor->process($data, $operation, $uriVariables, $context);        
     }
 }
