@@ -2,13 +2,52 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
 use App\Repository\TaskRepository;
+use App\State\TaskSetOwnerProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ApiResource(
+    operations: [
+        new Get(
+            security:"is_granted('ROLE_USER')",
+            normalizationContext: [
+                'groups' => ['task:read:detail']
+            ]
+        ),
+        new GetCollection(
+            security:"is_granted('ROLE_USER')"
+        ),
+        new Post(
+            security:"is_granted('ROLE_USER')",
+            normalizationContext: [
+                'groups' => ['task:read:detail']
+            ]
+        ),
+        new Patch(
+            security:"is_granted('TASK_EDIT', object)",
+
+        ),
+        new Delete(
+            security:"is_granted('TASK_EDIT', object)"
+        ),
+    ],
+    denormalizationContext: [
+        'groups' => ['task:write']
+    ],
+    normalizationContext: [
+        'groups' => ['task:read:list']
+    ]
+)]
 class Task
 {
 
@@ -45,7 +84,7 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasks')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['task:read:detail'])]
-    private User $owner;
+    private ?User $owner = null;
 
     public function getId(): ?int
     {

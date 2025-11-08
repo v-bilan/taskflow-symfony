@@ -28,7 +28,7 @@ class AppFixtures extends Fixture
             ['owner' => $adminUser]
         );
 
-        TaskFactory::createMany(50);
+        TaskFactory::createMany(1);
 
         $manager->flush();
     }

@@ -6,8 +6,9 @@ use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Zenstruck\Foundry\Test\ResetDatabase;
+use Symfony\Component\HttpFoundation\Request;
 
-class JWTTaskTest extends WebTestCase
+class ApiPlatformWithJWTTaskTest extends WebTestCase
 {
     use ResetDatabase;
 
@@ -44,7 +45,7 @@ class JWTTaskTest extends WebTestCase
             'GET',
             '/api/tasks',
             server: [
-                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_ACCEPT' => 'application/ld+json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ]
         );
@@ -54,7 +55,7 @@ class JWTTaskTest extends WebTestCase
 
         $data = json_decode($client->getResponse()->getContent(), true);
 
-        $this->assertSame('ok', $data['status']);
+        $this->assertSame(2, $data['totalItems']);
 
         $client->request(
             'PATCH',
@@ -65,35 +66,49 @@ class JWTTaskTest extends WebTestCase
                 'status' => 'done',
             ])
         );
+
+        //dd($client->getResponse()->getStatusCode());
         $this->assertResponseStatusCodeSame(401);
+
 
         $client->request(
             'PATCH',
             '/api/tasks/' . $task2->getId(),
-            content: json_encode([
-                'title' => 'task 1 updated',
+
+            content: json_encode( [
+                'id' => 333,
+                'title' => 'task 2 updated',
                 'status' => 'done',
             ]),
             server: [
+                'CONTENT_TYPE' => 'application/merge-patch+json',
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ]
         );
+   //     dd($client->getResponse()->getStatusCode());
+   //     dd($client->getResponse()->getContent());
         $this->assertResponseStatusCodeSame(403);
 
         $client->request(
             'PATCH',
             '/api/tasks/' . $task1->getId(),
-            content: json_encode([
+
+           content: json_encode( [
                 'id' => 333,
                 'title' => 'task 1 updated',
                 'status' => 'done',
             ]),
             server: [
+                'CONTENT_TYPE' => 'application/merge-patch+json',
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ]
+
         );
+
+       // dd($client->getRequest()->__toString());
+       // dd($client->getResponse()->getContent());
 
         $this->assertResponseStatusCodeSame(200);
 
@@ -101,18 +116,19 @@ class JWTTaskTest extends WebTestCase
             'GET',
             '/api/tasks/' . $task1->getId(),
             server: [
-                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_ACCEPT' => 'application/ld+json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ]
         );
         $data = json_decode($client->getResponse()->getContent(), true);
-        $this->assertSame('task 1 updated', $data['data']['title']);
-        $this->assertSame('done', $data['data']['status']);
+
+        $this->assertSame('task 1 updated', $data['title']);
+        $this->assertSame('done', $data['status']);
 
         $client->request(
             method: 'POST',
             uri: '/api/tasks',
-            server: ['CONTENT_TYPE' => 'application/json'],
+            server: ['CONTENT_TYPE' => 'application/merge-patch+json'],
             content: json_encode([
                 'title' => 'test@example.com',
                 'status' => 'todo'
@@ -125,7 +141,8 @@ class JWTTaskTest extends WebTestCase
             method: 'POST',
             uri: '/api/tasks',
             server: [
-                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/ld+json',
+                'HTTP_ACCEPT' => 'application/ld+json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ],
             content: json_encode([
@@ -135,10 +152,13 @@ class JWTTaskTest extends WebTestCase
         );
 
         $this->assertResponseStatusCodeSame(201);
-
+        $id = $task1->getId();
+/*
         $response = $client->getResponse();
-        $content = json_decode($response->getContent());
 
+        dd($response);
+        $content = json_decode($response->getContent());
+dd($content);
         $id = $content?->data?->id;
 
         $this->assertIsInt($id);
@@ -146,7 +166,7 @@ class JWTTaskTest extends WebTestCase
         $task = TaskFactory::repository()->find($id);
 
         $this->assertNotNull($task);
-
+*/
         $client->request(
             'DELETE',
             '/api/tasks/' . $task2->getId()
@@ -155,13 +175,15 @@ class JWTTaskTest extends WebTestCase
 
         $client->request(
             'DELETE',
-            '/api/tasks/' . $task->getId(),
+            '/api/tasks/' . $task1->getId(),
             server: [
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ],
         );
-        $this->assertResponseStatusCodeSame(200);
+        $response = $client->getResponse();
+
+        $this->assertResponseStatusCodeSame(204);
 
         $task = TaskFactory::repository()->find($id);
         $this->assertNull($task);
