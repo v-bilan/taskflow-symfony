@@ -240,6 +240,38 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         );
         $this->assertResponseStatusCodeSame(204);
 
+        $client->request(
+            'PATCH',
+            '/api/tasks/' . $task1->getId(),
+
+           content: json_encode( [
+                'id' => 333,
+                'title' => 'task 1 updated by admin',
+                'status' => 'done',
+            ]),
+            server: [
+                'CONTENT_TYPE' => 'application/merge-patch+json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ]
+
+        );
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $client->request(
+            'GET',
+            '/api/tasks/' . $task1->getId(),
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
+            ]
+        );
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertSame('task 1 updated by admin', $data['title']);
+        $this->assertSame('done', $data['status']);
+
     }
 
     private function getData(): array
