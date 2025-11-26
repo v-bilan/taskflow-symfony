@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new Get(
-            security:"is_granted('ROLE_USER')",
+            security:"is_granted('TASK_VIEW', object)",
             normalizationContext: [
                 'groups' => ['task:read:detail']
             ]
@@ -40,7 +40,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
         ),
         new Delete(
-            security:"is_granted('TASK_EDIT', object)"
+            security:"is_granted('TASK_DELETE', object)"
         ),
     ],
     denormalizationContext: [

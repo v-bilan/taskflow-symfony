@@ -3,8 +3,7 @@
 namespace App\Security\Voter;
 
 use App\Entity\Task;
-use App\Repository\TaskRepository;
-use Doctrine\ORM\Query\Expr\Func;
+
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -13,6 +12,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final class TaskVoter extends Voter
 {
     public const EDIT = 'TASK_EDIT';
+    public const VIEW = 'TASK_VIEW';
+    public const DELETE = 'TASK_DELETE';
+
     public function __construct(
         private Security $security
     ) {
@@ -20,7 +22,7 @@ final class TaskVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::EDIT])
+        return in_array($attribute, [self::EDIT, self::VIEW, self::DELETE])
             && $subject instanceof Task;
     }
 
@@ -39,7 +41,9 @@ final class TaskVoter extends Voter
 
 
         switch ($attribute) {
+            case self::VIEW:
             case self::EDIT:
+            case self::DELETE:
                 return $subject?->getOwner() == $user;
                 break;
         }

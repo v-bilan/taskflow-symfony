@@ -132,8 +132,7 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             'PATCH',
             '/api/tasks/' . $task1->getId(),
 
-           content: json_encode( [
-                'id' => 333,
+           content: json_encode([
                 'title' => 'task 1 updated',
                 'status' => 'done',
             ]),
