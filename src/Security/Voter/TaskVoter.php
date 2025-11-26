@@ -3,6 +3,9 @@
 namespace App\Security\Voter;
 
 use App\Entity\Task;
+use App\Repository\TaskRepository;
+use Doctrine\ORM\Query\Expr\Func;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -10,6 +13,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 final class TaskVoter extends Voter
 {
     public const EDIT = 'TASK_EDIT';
+    public function __construct(
+        private Security $security
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -21,8 +28,13 @@ final class TaskVoter extends Voter
     {
         $user = $token->getUser();
 
+
         if (!$user instanceof UserInterface) {
             return false;
+        }
+
+        if ($this->security->isGrantedForUser($user, 'ROLE_ADMIN')) {
+            return true;
         }
 
 

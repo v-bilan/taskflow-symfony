@@ -14,6 +14,15 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
 
     public function testSomething(): void
     {
+        $admin = UserFactory::createOne(
+            attributes:[
+                'email' => 'admin@taskflow.com',
+                'plainPassword' => 'admin',
+                'roles' => ['ROLE_ADMIN'],
+                'name' => 'admin',
+            ]
+        );
+
         list ($user1, $user2, $task1, $task2) = $this->getData();
 
         $client = static::createClient();
@@ -55,7 +64,37 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
 
         $data = json_decode($client->getResponse()->getContent(), true);
 
+        $this->assertSame(1, $data['totalItems']);
+
+        $client->jsonRequest(
+            'POST',
+            '/api/login_check',
+            [
+              'username' => $admin->getEmail(),
+              'password' => 'admin',
+            ]
+        );
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $adminToken = $data['token'];
+
+        $client->request(
+            'GET',
+            '/api/tasks',
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ]
+        );
+
+        $this->assertResponseIsSuccessful();
+        $this->assertTrue(json_validate($client->getResponse()->getContent()));
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+
         $this->assertSame(2, $data['totalItems']);
+
 
         $client->request(
             'PATCH',
@@ -67,7 +106,6 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             ])
         );
 
-        //dd($client->getResponse()->getStatusCode());
         $this->assertResponseStatusCodeSame(401);
 
 
@@ -191,6 +229,17 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             ],
         );
         $this->assertResponseStatusCodeSame(403);
+
+        $client->request(
+            'DELETE',
+            '/api/tasks/' . $task2->getId(),
+            server: [
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ],
+        );
+        $this->assertResponseStatusCodeSame(204);
+
     }
 
     private function getData(): array

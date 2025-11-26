@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use App\Repository\TaskRepository;
+use App\State\TaskCollectionStateProvider;
 use App\State\TaskSetOwnerProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,6 +26,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             ]
         ),
         new GetCollection(
+            provider: TaskCollectionStateProvider::class,
             security:"is_granted('ROLE_USER')"
         ),
         new Post(
