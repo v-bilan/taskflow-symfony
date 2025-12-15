@@ -1,4 +1,7 @@
 {
+    "andanteproject/timestampable-bundle": {
+        "version": "3.0.3"
+    },
     "api-platform/symfony": {
         "version": "4.2",
         "recipe": {

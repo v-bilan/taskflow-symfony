@@ -17,3 +17,5 @@ api_platform:
         #jsonapi: ["application/vnd.api+json"]
         json: ["application/json"]
         #xml: ["application/xml", "text/xml"]
+    use_symfony_listeners: true    
+    enable_link_security: true

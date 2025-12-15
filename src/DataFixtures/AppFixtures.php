@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Factory\CommentFactory;
 use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -24,11 +25,19 @@ class AppFixtures extends Fixture
 
         UserFactory::createMany(10);
 
-        TaskFactory::createOne(
+        $adminTask = TaskFactory::createOne(
             ['owner' => $adminUser]
         );
 
-        TaskFactory::createMany(1);
+        CommentFactory::createOne(
+            [
+                'author' => $adminUser,
+                'task'=> $adminTask
+            ]
+            );
+
+        TaskFactory::createMany(30);
+        CommentFactory::createMany(100);
 
         $manager->flush();
     }

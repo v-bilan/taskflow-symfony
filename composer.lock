@@ -4,8 +4,81 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "536e84335e67ec07ecf254ce014f92fe",
+    "content-hash": "56daf8b73b4587c70ff0373a6c01472e",
     "packages": [
+        {
+            "name": "andanteproject/timestampable-bundle",
+            "version": "3.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/andanteproject/timestampable-bundle.git",
+                "reference": "60bb1db042d2a9fbe8acb05a63037b8df7abcdc5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/andanteproject/timestampable-bundle/zipball/60bb1db042d2a9fbe8acb05a63037b8df7abcdc5",
+                "reference": "60bb1db042d2a9fbe8acb05a63037b8df7abcdc5",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/common": "^2.13 || ^3.0",
+                "doctrine/event-manager": "^1.2 | ^2.0",
+                "php": "^8.2",
+                "symfony/clock": "^6.2 | ^7.0",
+                "symfony/framework-bundle": "^5.0 | ^6.0 | ^7.0"
+            },
+            "require-dev": {
+                "doctrine/doctrine-bundle": "^2.10",
+                "doctrine/orm": "^2.15.3",
+                "ext-json": "*",
+                "friendsofphp/php-cs-fixer": "^3.58",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^1.2",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "phpstan/phpstan-symfony": "^1.0",
+                "phpunit/phpunit": "^9.5",
+                "roave/security-advisories": "dev-master"
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "psr-4": {
+                    "Andante\\TimestampableBundle\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andante Project",
+                    "homepage": "https://github.com/andanteproject"
+                },
+                {
+                    "name": "Cristoforo Cervino",
+                    "homepage": "https://github.com/cristoforocervino"
+                },
+                {
+                    "name": "Luca Cividini",
+                    "homepage": "https://github.com/lucacividini"
+                }
+            ],
+            "description": "A Symfony Bundle to handle entities createdAt and updatedAt dates with Doctrine",
+            "keywords": [
+                "doctrine",
+                "doctrine-orm",
+                "php",
+                "php8",
+                "symfony",
+                "symfony-bundle",
+                "timestampable"
+            ],
+            "support": {
+                "issues": "https://github.com/andanteproject/timestampable-bundle/issues",
+                "source": "https://github.com/andanteproject/timestampable-bundle/tree/3.0.3"
+            },
+            "time": "2024-06-14T08:52:43+00:00"
+        },
         {
             "name": "api-platform/doctrine-common",
             "version": "v4.2.3",
@@ -12169,7 +12242,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -12177,6 +12250,6 @@
         "ext-ctype": "*",
         "ext-iconv": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }

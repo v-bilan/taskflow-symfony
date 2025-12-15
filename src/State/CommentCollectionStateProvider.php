@@ -4,29 +4,26 @@ namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
-use App\Repository\TaskRepository;
-use Doctrine\ORM\QueryBuilder;
-use Override;
+use App\Repository\CommentRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 
-class TaskCollectionStateProvider extends AbstractCollectionStateProvider
+class CommentCollectionStateProvider extends AbstractCollectionStateProvider
 {
     public function __construct(
+        private CommentRepository $commentRepository,
         private Security $security,
-        private TaskRepository $taskRepository,
-        Pagination $pagination        
-    ) {   
-        parent::__construct($pagination);    
+        Pagination $pagination
+    ) {
+        parent::__construct($pagination);
     }
-    
-    #[Override]
+
     protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []) 
     {
         $user = $this->security->getUser();
-        $qb = $this->taskRepository->createQueryBuilder('t');
+        $qb = $this->commentRepository->createQueryBuilder('c');
         if (!$this->security->isGranted('ROLE_ADMIN')) {
-            $qb->andWhere('t.owner = :owner')
-            ->setParameter('owner', $user);
+            $qb->andWhere('c.author = :author')
+            ->setParameter('author', $user);
         }
         return $qb;
     }
