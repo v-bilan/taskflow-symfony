@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use App\Repository\CommentRepository;
 use App\Repository\TaskRepository;
+use Doctrine\ORM\QueryBuilder;
+use Override;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -19,11 +21,12 @@ class TaskCommentCollectionStateProvider extends AbstractCollectionStateProvider
     ) {
         parent::__construct($pagination);
     }
-
-    protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []) 
+    #[Override]
+    protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []) : QueryBuilder
     {
         
         $task = $this->taskRepository->find(intval($uriVariables['id']));
+        
         if (! $task) {
             throw new NotFoundHttpException();
         }

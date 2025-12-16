@@ -6,7 +6,7 @@ use ApiPlatform\Doctrine\Orm\Extension\DoctrinePaginatorFactory;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\ProviderInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use Doctrine\ORM\QueryBuilder;
 
 abstract class AbstractCollectionStateProvider implements ProviderInterface
 {
@@ -32,5 +32,5 @@ abstract class AbstractCollectionStateProvider implements ProviderInterface
         
     }
     
-    abstract protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []);
+    abstract protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []): QueryBuilder;
 }

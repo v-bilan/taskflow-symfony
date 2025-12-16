@@ -46,7 +46,18 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         $token1 = $this->loginUser($user1, 'user1123');
         $token2 = $this->loginUser($user2, 'user1123');
         $adminToken = $this->loginUser($admin, 'admin');
-        
+
+         $client->request(
+            'GET',
+            '/api/tasks/' . 1234 . '/comments',
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ]
+        );
+
+        $this->assertResponseStatusCodeSame(404);
+
         $client->request(
             'GET',
             '/api/tasks/' . $task1->getId() . '/comments',
@@ -89,18 +100,6 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         $this->assertTrue(json_validate($client->getResponse()->getContent()));
 
         $data = json_decode($client->getResponse()->getContent(), true);
-    
-
-         $client->request(
-            'GET',
-            '/api/tasks/' . 1234 . '/comments',
-            server: [
-                'HTTP_ACCEPT' => 'application/ld+json',
-                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
-            ]
-        );
-
-        $this->assertResponseStatusCodeSame(404);
 
         $client->request(
             'GET',
@@ -143,14 +142,15 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             uri: '/api/tasks/' . $task1->getId(). '/comments',
         
             server: [
-                'CONTENT_TYPE' => 'application/j=ld+json',
+                'CONTENT_TYPE' => 'application/ld+json',
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ],
             content: json_encode([
-                    'message' => '12'
+                    'message' => 'w2'
             ])
         );
+
         $this->assertResponseStatusCodeSame(422);
 
         $user1ComentCount = count($user1->getComments());
@@ -161,7 +161,7 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             uri: '/api/tasks/' . $task1->getId(). '/comments',
         
             server: [
-                'CONTENT_TYPE' => 'application/j=ld+json',
+                'CONTENT_TYPE' => 'application/ld+json',
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token2
             ],
@@ -176,7 +176,7 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             uri: '/api/tasks/' . $task1->getId(). '/comments',
         
             server: [
-                'CONTENT_TYPE' => 'application/j=ld+json',
+                'CONTENT_TYPE' => 'application/ld+json',
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
             ],
@@ -191,7 +191,7 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             uri: '/api/tasks/' . $task1->getId(). '/comments',
         
             server: [
-                'CONTENT_TYPE' => 'application/j=ld+json',
+                'CONTENT_TYPE' => 'application/ld+json',
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_AUTHORIZATION' => 'Bearer ' . $token1
             ],

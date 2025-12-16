@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Post;
 use App\Controller\AddCommetntForTaskController;
 use App\Repository\CommentRepository;
 use App\State\CommentCollectionStateProvider;
+use App\State\CommentSetOwnerAndTaskProcessor;
 use App\State\TaskCommentCollectionStateProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -41,13 +42,19 @@ use Symfony\Component\Validator\Constraints as Assert;
                 ],
                 provider: TaskCommentCollectionStateProvider::class
         ),
+        new Post(
+            uriTemplate: '/tasks/{id}/comments',
+            read: false,
+            denormalizationContext: ['groups' => ['comment:write']],
+           
+        ),
         new Patch(
             security:"is_granted('COMMENT_EDIT', object)",
         ),
         new Delete(
             security:"is_granted('COMMENT_DELETE', object)",
         ),
-        
+    /*    
         new Post(
             uriTemplate: '/tasks/{id}/comments',
             controller: AddCommetntForTaskController::class,
@@ -59,6 +66,7 @@ use Symfony\Component\Validator\Constraints as Assert;
               'groups'=> ['comment:read']
             ]
         )
+        */    
             
     ],
     normalizationContext: [

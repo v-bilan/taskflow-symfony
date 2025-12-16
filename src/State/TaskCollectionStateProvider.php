@@ -20,7 +20,7 @@ class TaskCollectionStateProvider extends AbstractCollectionStateProvider
     }
     
     #[Override]
-    protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []) 
+    protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []): QueryBuilder
     {
         $user = $this->security->getUser();
         $qb = $this->taskRepository->createQueryBuilder('t');

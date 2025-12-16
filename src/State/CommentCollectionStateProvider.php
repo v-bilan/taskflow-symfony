@@ -5,6 +5,8 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\Pagination;
 use App\Repository\CommentRepository;
+use Doctrine\ORM\QueryBuilder;
+use Override;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class CommentCollectionStateProvider extends AbstractCollectionStateProvider
@@ -17,7 +19,8 @@ class CommentCollectionStateProvider extends AbstractCollectionStateProvider
         parent::__construct($pagination);
     }
 
-    protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []) 
+    #[Override]
+    protected function getQueryBuilder(Operation $operation, array $uriVariables = [], array $context = []): QueryBuilder
     {
         $user = $this->security->getUser();
         $qb = $this->commentRepository->createQueryBuilder('c');
