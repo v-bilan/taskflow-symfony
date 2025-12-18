@@ -20,7 +20,10 @@ class CommentRestoreProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if ($data instanceof Comment && $operation instanceof Patch) {
+        if (
+            $data instanceof Comment 
+            && $operation instanceof Patch
+            && $operation->getUriTemplate() === '/comments/{id}/restore') {
             $data->setDeletedAt(null);
         }
         

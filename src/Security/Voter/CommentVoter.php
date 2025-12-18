@@ -37,11 +37,12 @@ final class CommentVoter extends Voter
             return true;
         }
 
+        if ($subject->isSoftDeleted()) {
+            return false;
+        }       
+
         switch ($attribute) {
             case self::DELETE:
-                if ($subject->isSoftDeleted()) {
-                    return false;
-                }
             case self::VIEW:
             case self::EDIT:
                 return $subject?->getAuthor() == $user;

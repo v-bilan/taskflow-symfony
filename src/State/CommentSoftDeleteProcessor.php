@@ -4,6 +4,7 @@ namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Entity\Comment;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 
@@ -16,7 +17,7 @@ class CommentSoftDeleteProcessor implements ProcessorInterface
     ) {}
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if ($data instanceof \App\Entity\Comment) {
+        if ($data instanceof Comment) {
             $data->softDelete();
             $this->entityManager->flush();
             return null;

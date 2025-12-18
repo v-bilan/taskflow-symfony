@@ -13,6 +13,7 @@ use Doctrine\ORM\QueryBuilder;
 use Override;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 #[AsDecorator('api_platform.doctrine.orm.state.item_provider')]
 class CommentStateProvider implements ProviderInterface
@@ -27,13 +28,14 @@ class CommentStateProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        if (($operation instanceof Get || $operation instanceof Patch) && 
-            $operation->getClass() == Comment::class && 
-            $this->security->isGranted('ROLE_ADMIN')
-        ) {
-            $this->entityManager->getFilters()->disable('soft_delete');
-        }
-        return $this->innerProvider->provide($operation, $uriVariables, $context);
+        $result = $this->innerProvider->provide($operation, $uriVariables, $context);
+        if ( 
+            $result instanceof Comment
+            && !$this->security->isGranted('ROLE_ADMIN')
+            && $result->isSoftDeleted()){
+                throw new NotFoundHttpException();
+            }
+          return $result;
     }
    
 }
