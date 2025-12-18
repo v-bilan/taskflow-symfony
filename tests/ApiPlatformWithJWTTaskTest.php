@@ -290,6 +290,7 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         );
         $this->assertResponseStatusCodeSame(204);
         
+        $commentsCount = count($task2->getComments());
         $client->request(
             'DELETE',
             '/api/comments/' . $task2->getComments()->first()->getId(),
@@ -300,6 +301,39 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             ]
         );
         $this->assertResponseStatusCodeSame(204);
+
+        
+
+        $client->request(
+            'GET',
+            '/api/tasks/' . $task2->getId() . '/comments',
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token2
+            ]
+        );
+
+        $this->assertResponseIsSuccessful();
+       
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        
+        $this->assertSame($commentsCount - 1, $data['totalItems']);
+
+        $client->request(
+            'GET',
+            '/api/tasks/' . $task2->getId() . '/comments',
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ]
+        );
+
+        $this->assertResponseIsSuccessful();
+       
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame($commentsCount, $data['totalItems']);
     }
 
     private function createAdmin(): User

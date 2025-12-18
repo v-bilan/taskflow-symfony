@@ -14,6 +14,7 @@ use App\Controller\AddCommetntForTaskController;
 use App\Repository\CommentRepository;
 use App\State\CommentCollectionStateProvider;
 use App\State\CommentSetOwnerAndTaskProcessor;
+use App\State\CommentSoftDeleteProcessor;
 use App\State\TaskCommentCollectionStateProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -107,6 +108,9 @@ class Comment implements TimestampableInterface
     private ?\DateTimeImmutable $createdAt = null;
     #[Groups(['comment:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
     
     
     public function getId(): ?int
@@ -166,5 +170,27 @@ class Comment implements TimestampableInterface
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    public function isSoftDeleted(): bool
+    {
+        return $this->deletedAt !== null;
+    }
+    
+    public function softDelete(): void
+    {
+        $this->deletedAt = new \DateTimeImmutable();
     }
 }
