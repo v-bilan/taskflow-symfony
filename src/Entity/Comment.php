@@ -10,11 +10,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Controller\AddCommetntForTaskController;
 use App\Repository\CommentRepository;
 use App\State\CommentCollectionStateProvider;
-use App\State\CommentSetOwnerAndTaskProcessor;
-use App\State\CommentSoftDeleteProcessor;
+use App\State\CommentRestoreProcessor;
 use App\State\TaskCommentCollectionStateProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -46,15 +44,22 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/tasks/{id}/comments',
             read: false,
-            denormalizationContext: ['groups' => ['comment:write']],
+           // denormalizationContext: ['groups' => ['comment:write']],
            
         ),
         new Patch(
             security:"is_granted('COMMENT_EDIT', object)",
+          //  denormalizationContext: ['groups' => ['comment:write']],
         ),
+
         new Delete(
             security:"is_granted('COMMENT_DELETE', object)",
         ),
+
+        new Patch(
+            uriTemplate: '/comments/{id}/restore',
+            security: 'is_granted("COMMENT_RESTORE", object)'
+        )
     /*    
         new Post(
             uriTemplate: '/tasks/{id}/comments',
@@ -110,6 +115,7 @@ class Comment implements TimestampableInterface
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
+     #[Groups(['comment:read'])]
     private ?\DateTimeImmutable $deletedAt = null;
     
     

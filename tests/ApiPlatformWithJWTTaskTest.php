@@ -291,9 +291,10 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         $this->assertResponseStatusCodeSame(204);
         
         $commentsCount = count($task2->getComments());
+        $deletedCommentId = $task2->getComments()->first()->getId();
         $client->request(
             'DELETE',
-            '/api/comments/' . $task2->getComments()->first()->getId(),
+            '/api/comments/' . $deletedCommentId,
              server: [
                 'CONTENT_TYPE' => 'application/merge-patch+json',
                 'HTTP_ACCEPT' => 'application/json',
@@ -301,8 +302,6 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             ]
         );
         $this->assertResponseStatusCodeSame(204);
-
-        
 
         $client->request(
             'GET',
@@ -314,11 +313,10 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
         );
 
         $this->assertResponseIsSuccessful();
-       
 
         $data = json_decode($client->getResponse()->getContent(), true);
         
-        $this->assertSame($commentsCount - 1, $data['totalItems']);
+        $this->assertSame($commentsCount-1, $data['totalItems']);
 
         $client->request(
             'GET',
@@ -334,6 +332,73 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
 
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertSame($commentsCount, $data['totalItems']);
+
+
+        $client->request(
+            'GET',
+            '/api/comments/' . $deletedCommentId,
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token2
+            ]
+        );
+
+         $this->assertResponseStatusCodeSame(404);
+
+         $client->request(
+            'GET',
+            '/api/comments/' . $deletedCommentId,
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ]
+        );
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $client->request(
+            'PATCH',
+            '/api/comments/' . $deletedCommentId . '/restore',
+            server: [
+                'CONTENT_TYPE' => 'application/merge-patch+json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token2
+            ]
+        );
+        $this->assertResponseStatusCodeSame(404);
+
+        $client->request(
+            'PATCH',
+            '/api/comments/' . $deletedCommentId . '/restore',
+            server: [
+                'CONTENT_TYPE' => 'application/merge-patch+json',
+                'HTTP_ACCEPT' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $adminToken
+            ],
+            content: json_encode( [
+               
+            ]),
+        );
+        $this->assertResponseStatusCodeSame(200);
+
+        $this->assertTrue(json_validate($client->getResponse()->getContent()));
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+       
+
+
+        $this->assertNull($data['deletedAt']);
+
+        $client->request(
+            'GET',
+            '/api/comments/' . $deletedCommentId,
+            server: [
+                'HTTP_ACCEPT' => 'application/ld+json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token2
+            ]
+        );
+
+         $this->assertResponseStatusCodeSame(200);
     }
 
     private function createAdmin(): User
@@ -629,7 +694,8 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             3,
             [
                 'author' => $user1,
-                'task'=> $task1
+                'task'=> $task1,
+                
             ]
         );
 
@@ -637,7 +703,8 @@ class ApiPlatformWithJWTTaskTest extends WebTestCase
             2,
             [
                 'author' => $user2,
-                'task'=> $task2
+                'task'=> $task2,
+                'deletedAt' => null
             ]
         );
 

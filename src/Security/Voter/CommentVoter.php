@@ -12,6 +12,7 @@ final class CommentVoter extends Voter
     public const EDIT = 'COMMENT_EDIT';
     public const VIEW = 'COMMENT_VIEW';
     public const DELETE = 'COMMENT_DELETE';
+    public const RESTORE = 'COMMENT_RESTORE';
 
     public function __construct(
         private Security $security
@@ -20,7 +21,7 @@ final class CommentVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::EDIT, self::VIEW, self::DELETE])
+        return in_array($attribute, [self::EDIT, self::VIEW, self::DELETE, self::RESTORE])
             && $subject instanceof \App\Entity\Comment;
     }
 

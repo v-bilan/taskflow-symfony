@@ -42,7 +42,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['task:read:detail'])]
+    #[Groups(['comment:read','task:read:detail'])]
     private ?string $name = null;
 
     /**
