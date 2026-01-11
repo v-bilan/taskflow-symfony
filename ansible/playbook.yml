@@ -1,0 +1,221 @@
+---
+- hosts: vb
+
+  vars:
+    
+    symfony_root_dir: /var/www/taskflow
+    symfony_console: /var/www/taskflow/bin/console
+    user_name: vagrant
+
+    postgres_user: symfony_user
+
+    postgres_db: taskflow_db
+
+    git_deploy_key: /Users/macbook/.ssh/id_github_mac
+    git_deploy_key_path: /home/{{ user_name }}/.ssh/id_github_mac
+
+  vars_files:
+    - group_vars/production.yml #password admin
+
+  pre_tasks:
+
+    - name: Updating apt cache
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Upgrade all apt packeges
+      apt:
+        upgrade: safe
+      become: true
+  roles:
+    - nginx
+
+  tasks:
+    - name: Install zip utility
+      apt:
+        name: 
+          - zip
+          - unzip
+        state: latest
+      become: true
+
+    - name: Install Git
+      apt:
+        name: git
+        state: latest
+      become: true  
+    
+    - name: Install PHP and extensions  
+      apt: 
+        name:
+          - php8.3
+          - php8.3-cli
+          - php8.3-fpm
+          - php8.3-common
+          - php8.3-pgsql
+          - php8.3-xml
+          - php8.3-curl
+          - php8.3-intl
+          - php8.3-mbstring
+          - php8.3-opcache
+          - php8.3-zip
+       
+        state: latest
+      become: true 
+      notify: Restart PHP-FPM
+
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql
+        state: latest
+      become: true
+
+    - name: Install PostgreSQL Python dependencies
+      apt:
+        name:
+          - python3-psycopg2
+        state: present
+      become: true  
+
+    - name: Install ACL support (required for become_user)
+      apt:
+        name: acl
+        state: present
+      become: true
+
+
+    - name: Create PostgreSQL user
+      become: true
+      become_user: postgres
+      postgresql_user:
+        name: "{{ postgres_user }}"
+        password: "{{ postgres_password }}"
+        role_attr_flags: CREATEDB
+        state: present
+
+
+    - name: SET php timezone
+      lineinfile:
+        path: /etc/php/8.3/cli/php.ini
+        regexp: '^;?date.timezone =.*'
+        line: 'date.timezone = UTC'
+      become: true
+      
+    - name: SET php-fpm timezone
+      lineinfile:
+        path: /etc/php/8.3/fpm/php.ini
+        regexp: '^;?date.timezone =.*'
+        line: 'date.timezone = UTC'
+      become: true
+      notify: Restart PHP-FPM
+
+    - name: Create directiry and set permisions for Nginx site
+      file:
+        path: "{{ symfony_root_dir }}"
+        state: directory
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        recurse: yes
+      become: true
+
+    - name: Ensure .ssh directory exists on remote host
+      file:
+        path: /home/{{ user_name }}/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Upload the private key for cloning
+      ansible.builtin.copy:
+        src: "{{ git_deploy_key }}" 
+        dest: "{{ git_deploy_key_path }}" 
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: '0600' # Strict permissions are crucial   
+
+    - name: Checkout project from GitHub
+      git:
+        repo: git@github.com:v-bilan/taskflow-symfony.git
+        dest: "{{ symfony_root_dir }}"
+        version: main
+        key_file: "{{ git_deploy_key_path }}"
+        force: yes
+        accept_hostkey: yes    
+
+    - name: Download Composer
+      script: scripts/install_copmposer.sh
+
+    - name: Move composer globaly
+      command: mv composer.phar /usr/local/bin/composer
+      become: true
+      
+    - name: Set permisions on composer binary
+      file:
+        path: /usr/local/bin/composer
+        mode: 'a+x'
+
+    - name: Install project dependencies with Composer
+      become: true
+      become_user: "{{ user_name }}"
+      composer:
+        working_dir: "{{ symfony_root_dir }}"
+        executable: /usr/local/bin/composer
+        php_path: /usr/bin/php8.3
+        optimize_autoloader: true
+        no_dev: false
+
+    - name: Create .env.local file if not exists
+      file:
+        dest: "{{ symfony_root_dir }}/.env.local"
+        state: touch
+
+    - name:  Set DATABASE_URL in .env.local
+      become: true
+      become_user: "{{ user_name }}"
+      lineinfile:    
+        path: "{{ symfony_root_dir }}/.env.local"
+        regexp: '^DATABASE_URL=.*'
+        line: 'DATABASE_URL=postgresql://{{ postgres_user }}:{{ postgres_password }}@localhost:5432/{{ postgres_db }}'  
+    
+    - name:  Set DATABASE_URL in .env.local
+      become: true
+      become_user: "{{ user_name }}"
+      lineinfile:    
+        path: "{{ symfony_root_dir }}/.env.local"
+        regexp: '^JWT_PASSPHRASE=.*'
+        line: 'JWT_PASSPHRASE={{jwt_passphrase_here}}'
+
+    - name: Syfmony console commands
+      become: true
+      become_user: "{{ user_name }}"
+      command: php {{ symfony_console }} {{ item }}
+      args:
+        chdir: "{{ symfony_root_dir }}"
+      loop:
+        - 'doctrine:database:create --if-not-exists'
+        - 'doctrine:migrations:migrate --no-interaction'
+        - 'cache:clear'
+        - 'cache:warmup'
+      
+    - name: Get file stats
+      ansible.builtin.stat:
+        path: "{{ symfony_root_dir }}/config/jwt/private.pem"
+      register: file_status
+
+    - name: Syfmony console commands exik:jwt:generate-keypair if private.pem is missing
+      when: not file_status
+      become: true
+      become_user: "{{ user_name }}"
+      command: php {{ symfony_console }} lexik:jwt:generate-keypair --no-interaction
+      args:
+        chdir: "{{ symfony_root_dir }}"
+      
+
+  handlers:
+
+    - name: Restart PHP-FPM
+      become: true
+      service:
+        name: php8.3-fpm
+        state: restarted
+
